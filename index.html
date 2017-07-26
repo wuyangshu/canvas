@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Canvas 粒子特效</title>
+  <style media="screen">
+    #canvas {
+      display: block;
+      margin: 0 auto;
+    }
+  </style>
+</head>
+<body>
+  <canvas id="canvas" style="background-color:#EEEEEE" width="1000" height="360">
+
+  </canvas>
+  <script type="text/javascript">
+    let canvas = document.getElementById('canvas');
+    let ctx = canvas.getContext('2d');
+    // var ball = {
+    //   xPointer: 100,
+    //   yPointer: 100,
+    //   radius: 10,
+    //   color: 'blue'
+    // }
+    var ballList = [];
+
+    function draw() {
+      ctx.clearRect(0,0,1000,360);
+      // canvas 绘图api
+      // ctx.save();
+      // ctx.beginPath();
+      // ctx.fillStyle = '#123123';
+      // ctx.arc(ball.xPointer,ball.yPointer,ball.radius,0,Math.PI*2, false);
+      // ctx.closePath();
+      // ctx.fill();
+      for(var i = 0; i < ballList.length;i++){
+         ctx.save();
+         ctx.beginPath();
+         ctx.fillStyle = ballList[i].color;
+         ctx.arc(ballList[i].xPointer,ballList[i].yPointer,ballList[i].radius,0,Math.PI*2, false);
+         ctx.closePath();
+         ctx.fill();
+      }
+    }
+
+    function update() {
+      //  小球动起来
+       for(var i = 0;i < ballList.length; i++) {
+         ballList[i].xPointer += ballList[i].vx*ballList[i].x;
+         ballList[i].yPointer += ballList[i].vy*ballList[i].y;
+         if(ballList[i].xPointer+ballList[i].radius >= canvas.width || ballList[i].xPointer-ballList[i].radius <= 0) {
+           ballList[i].x = ballList[i].x*-1;
+         }
+         if(ballList[i].yPointer+ballList[i].radius >= canvas.height || ballList[i].yPointer-ballList[i].radius <= 0) {
+           ballList[i].y = ballList[i].y*-1;
+         }
+       }
+    }
+
+    function init() {
+      // 生成小球
+      for (var i = 0; i < 60; i++){
+        var ball= {};
+            // 数据模型有了，比对着来造球
+            // 随机的坐标 封装成一个函数
+            ball.xPointer = getRandom(20,980);
+            ball.yPointer = getRandom(20,340);
+            ball.radius = 9;
+            ball.color = "#" + ("00000" + ((Math.random() * 16777215 + 0.5) >> 0).toString(16)).slice(-6);
+            ball.x = getIndex();
+            ball.y = getIndex();
+            ball.vx = Math.random();
+            ball.vy = Math.random();
+            ballList.push(ball);
+      }
+      console.log(ballList);
+      // js 24是极小值 是页面刷新可以感知的最小时间
+      // 帧动画
+      setInterval(() => {
+        // 不停地画，不停地擦
+        draw();
+        drawLine();
+        update();
+      },24);
+      //draw();
+    }
+
+    function getRandom(start, end){
+    var choice = end - start + 1 ;
+    return Math.floor(Math.random()*choice)+start;
+      }
+
+
+    window.addEventListener("load", function() {
+      init();
+    },false);
+
+    function getIndex() {
+      var arr = [0,1];
+      var index = Math.floor(Math.random()*arr.length);
+      if(index == 0) {
+        index = -1;
+      }
+      return index;
+    }
+
+    function drawLine() {
+      for(var i = 0; i < ballList.length;i++) {
+        for(var j = 0; j < ballList.length;j++) {
+          var xx = Math.pow(ballList[i].xPointer-ballList[j].xPointer,2);
+          var yy = Math.pow(ballList[i].yPointer-ballList[j].yPointer,2);
+          var zz = Math.sqrt(xx + yy);
+          if(zz <= 100 & zz >= 20) {
+            ctx.save();
+            ctx.beginPath();
+            ctx.strokeStyle = '#999999';
+            ctx.lineWidth = 0.1;
+            ctx.moveTo(ballList[i].xPointer,ballList[i].yPointer);
+            ctx.lineTo(ballList[j].xPointer,ballList[j].yPointer);
+            ctx.closePath();
+            ctx.stroke();
+            ctx.restore();
+          }
+        }
+      }
+    }
+  </script>
+</body>
+</html>
