@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>canvas 刮刮卡效果</title>
+    <style>
+    #box {
+        width: 540px;
+        min-height: 360px;
+        margin: 50px auto;
+        background: url('http://placehold.it/540x360/EFEFEF/ffffff') no-repeat;
+        background-size: cover;
+    }
+    </style>
+</head>
+<body>
+<!-- 刮刮卡， 背景图片，早已放下，
+    奖已确定， 刮的体验 -->
+<div id="box"></div>
+<script src="http://cdn.bootcss.com/jquery/2.2.1/jquery.min.js"></script>
+<script src="http://mockjs.com/dist/mock.js">
+</script>
+<script>
+Mock.mock('/award/1',
+ [
+     {
+      'name': '特斯拉',
+      'url': 'http://cms-bucket.nosdn.127.net/catchpic/b/ba/bad6f58166f555751eee6cd643e8ce10.jpg?imageView&thumbnail=550x0'
+     }
+ ]);
+Mock.mock('/award/2',
+ [
+     {
+      'name': '欧州10日游',
+      'url': 'https://f7.sjbly.cn/m17/0711/0937/rainliudlh_750x500_fem.jpg'
+     }
+ ]);
+$(function() {
+    const box = document.querySelector('#box');
+    // jquery ajax
+    // 模拟现实  ar 前端 30％ 改变 输入入口和交互方式
+    // 前端大数据 vr  交互的数据据将是庞大的
+
+    $.getJSON('/award/2', function(data) {
+        box.style.backgroundImage
+         = 'url("' + data[0].url + '")';
+    })
+    // canvas 绘制刮刮卡
+    function init() {
+       if(!document.getElementById('myCanvas')){
+         var width = '';
+         var height = '';
+         //dom动态创建canvas
+         var canvas = document.createElement('canvas');
+         width = document.getElementById('box').offsetWidth;
+         height = document.getElementById('box').offsetHeight;
+         canvas.setAttribute('width', width + 'px');
+         canvas.setAttribute('height', height + 'px');
+         canvas.id = 'myCanvas'
+         document.getElementById('box').appendChild(canvas);
+       }
+       var myCanvasObject = document.getElementById('myCanvas');
+       var ctx = myCanvasObject.getContext('2d');
+       ctx.beginPath();//开始画
+       ctx.fillStyle = '#939393'//蘸颜料
+       ctx.rect(0,0,width, height);
+       ctx.closePath();
+       ctx.fill();
+
+       //清除一下
+       //事件 手机上 ontouchstart ontouchmove ontouchend
+       //PC onmousedown onmousemove onmouseup
+       //PC端没有touch事件 移动端一定有touch事件 也支持mousedown
+
+      //  myCanvasObject.addEventListener('mousedown', function() {
+      //    console.log('按下了鼠标左键');
+      //  })
+      //  myCanvasObject.addEventListener('touchstart', function() {
+      //    console.log('手指触摸了屏幕');
+      //  })
+      var hasTouch = "ontouchstart" in window? true: false;
+      var tapStart = hasTouch?'touchstart':'mousedown';
+      var tapMove = hasTouch?'touchmove':'mousemove';
+      var tapEnd = hasTouch?'touchend':'mouseup';
+      var isDown = false;
+      var pointerArr = [];
+      var xPointer = 0;
+      var yPointer = 0;
+      // 要绘制的点都放在这里 touch 事件event对象都会给我们一个坐标
+      myCanvasObject.addEventListener(tapStart, function(event) {
+        // event.clientX mousedown事件 鼠标离屏幕最左边的距离
+        // event.offsetLeft canvas 左边离屏幕最左边的距离
+        // 相减得到鼠标在canvas的偏移量
+        this.style.cursor = 'move';
+        isDown = true;
+        xPointer = hasTouch?event.targetTouches[0].pageX:event.clientX-this.offsetLeft;
+        console.log(event.clientX-this.offsetLeft);
+        console.log(event.clientX-this.offsetTop);
+      },false);
+      myCanvasObject.addEventListener(tapMove, function() {
+        console.log('擦除中');
+      },false);
+      myCanvasObject.addEventListener(tapEnd, function() {
+        console.log('结束');
+      },false);
+    }
+    init();
+})
+
+
+</script>
+</body>
+</html>
